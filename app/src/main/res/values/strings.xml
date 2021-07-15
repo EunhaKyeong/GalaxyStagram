@@ -8,6 +8,7 @@
     <string name="password">Password</string>
     <string name="signin_email">회원가입 혹은 이메일로 로그인</string>
     <string name="signin_google">구글 아이디로 로그인</string>
+    <string name="signin_google_faile">구글 로그인 중 오류 발생. 다시 시도해 주세요.</string>
     <string name="signin_facebook">Facebook login</string>
     <string name="signup_complete">Membership success</string>
     <string name="signin_complete">Login 성공</string>
