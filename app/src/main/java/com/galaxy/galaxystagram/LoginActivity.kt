@@ -40,7 +40,8 @@ class LoginActivity : AppCompatActivity() {
             signUp()
         }
         binding.googleLoginButton.setOnClickListener {
-            googleSignIn()
+            //Launcher를 실행해 LoginActivity -> 구글 로그인 화면으로 이동.
+            launcher!!.launch(getString(R.string.default_web_client_id))
         }
     }
 
@@ -105,12 +106,6 @@ class LoginActivity : AppCompatActivity() {
                     ).show()
                 }
             }
-    }
-
-    //구글 로그인
-    fun googleSignIn() {
-        //Launcher를 실행해 LoginActivity -> 구글 로그인 화면으로 이동.
-        launcher!!.launch(getString(R.string.default_web_client_id))
     }
 
     //tokenId를 이용해 firebase에 인증하는 함수.
