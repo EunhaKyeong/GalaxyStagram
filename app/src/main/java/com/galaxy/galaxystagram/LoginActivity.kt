@@ -128,6 +128,7 @@ class LoginActivity : AppCompatActivity() {
                         getString(R.string.signin_complete),
                         Toast.LENGTH_SHORT
                     ).show()
+                    startActivity(Intent(this@LoginActivity, MainActivity::class.java))
                 } else {
                     println("firebaseAuthWithGoogle => ${task.exception}")
                     Toast.makeText(
