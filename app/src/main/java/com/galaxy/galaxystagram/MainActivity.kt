@@ -2,18 +2,50 @@ package com.galaxy.galaxystagram
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.fragment.app.Fragment
 import com.galaxy.galaxystagram.databinding.ActivityMainBinding
-import com.google.firebase.auth.FirebaseAuth
+import com.galaxy.galaxystagram.navigation.*
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    var auth: FirebaseAuth? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        var email = FirebaseAuth.getInstance().currentUser!!.email.toString()
+        initNavigationBar()
+    }
+
+    fun initNavigationBar() {
+        binding.myNavigation.run {
+            setOnNavigationItemSelectedListener {
+                when (it.itemId) {
+                    R.id.homeItem -> {
+                        changeFragment(HomeFragment())
+                    }
+                    R.id.searchItem -> {
+                        changeFragment(SearchFragment())
+                    }
+                    R.id.photoItem -> {
+                        changeFragment(GalleryFragment())
+                    }
+                    R.id.favoriteItem -> {
+                        changeFragment(FavoriteFragment())
+                    }
+                    R.id.accountItem -> {
+                        changeFragment(AccountFragment())
+                    }
+                }
+                true
+            }
+            selectedItemId = R.id.homeItem
+        }
+    }
+
+    fun changeFragment(fragment: Fragment) {
+        supportFragmentManager.beginTransaction()
+            .replace(binding.mainContent.id, fragment).commit()
     }
 }
+
