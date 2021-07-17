@@ -1,10 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    <TextView
-        android:gravity="center"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="10dp">
+
+    <ImageView
+        android:id="@+id/postPhotoIV"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:src="@drawable/picture" />
+
+    <EditText
+        android:id="@+id/postTextView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="갤러리 fragment" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:layout_height="75dp"
+        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@+id/postPhotoIV"
+        android:gravity="top"
+        android:paddingLeft="10dp"
+        android:text="@string/hint_image_content" />
+
+    <Button
+        android:id="@+id/addPhotoButton"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_below="@+id/postTextView"
+        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@+id/postPhotoIV"
+        android:backgroundTint="@color/colorPrimaryDark"
+        android:text="@string/upload_image"
+        android:textColor="@color/black" />
+
+</RelativeLayout>
