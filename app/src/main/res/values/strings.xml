@@ -42,7 +42,7 @@
     <string name="send">Send</string>
 
     <!-- Add Photo -->
-    <string name="upload_image">사진 추가하기</string>
+    <string name="upload_image">게시글 업로드</string>
     <string name="hint_image_content">문구 입력</string>
     <string name="upload_success">사진 업로드 완료!</string>
     <string name="upload_fail">사진 업로드 중 오류 발생! 다시 시도해 주세요.</string>

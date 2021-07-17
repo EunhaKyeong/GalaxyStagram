@@ -23,7 +23,7 @@
         android:text="@string/hint_image_content" />
 
     <Button
-        android:id="@+id/addPhotoButton"
+        android:id="@+id/postButton"
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:layout_below="@+id/postTextView"
