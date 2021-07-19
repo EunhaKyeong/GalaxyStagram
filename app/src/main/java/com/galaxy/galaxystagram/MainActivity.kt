@@ -1,23 +1,25 @@
 package com.galaxy.galaxystagram
 
 import android.content.pm.PackageManager
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.galaxy.galaxystagram.databinding.ActivityMainBinding
 import com.galaxy.galaxystagram.navigation.*
-import java.util.jar.Manifest
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+    private final var FINISH_INTERVAL_TIME: Long = 2000
+    private var backPressedTime: Long = 0
+
     //갤러리 앱으로 이동하는 launcher 등록
     private var launcher = registerForActivityResult(ActivityResultContracts.GetContent()) {
-            it-> changeFragment(GalleryFragment(it))
+            it->nullCheckUri(it)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,7 +34,7 @@ class MainActivity : AppCompatActivity() {
             arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), 1)
     }
 
-    fun initNavigationBar() {
+    private fun initNavigationBar() {
         binding.myNavigation.run {
             setOnNavigationItemSelectedListener {
                 when (it.itemId) {
@@ -45,7 +47,7 @@ class MainActivity : AppCompatActivity() {
                     R.id.photoItem -> {
                         //앱이 갤러리에 접근햐는 것을 허용했을 경우
                         if (ContextCompat.checkSelfPermission(this@MainActivity.applicationContext, android.Manifest.permission.READ_EXTERNAL_STORAGE)== PackageManager.PERMISSION_GRANTED) {
-                            launcher.launch("image/*")
+                            launcher.launch("image/*")  //갤러리로 이동하는 런처 실행.
                         } else {    //앱이 갤러리에 접근햐는 것을 허용하지 않았을 경우
                             Toast.makeText(this@MainActivity,
                                 "갤러리 접근 권한이 거부돼 있습니다. 설정에서 접근을 허용해 주세요.",
@@ -59,6 +61,7 @@ class MainActivity : AppCompatActivity() {
                         changeFragment(AccountFragment())
                     }
                 }
+
                 true
             }
             selectedItemId = R.id.homeItem
@@ -67,7 +70,47 @@ class MainActivity : AppCompatActivity() {
 
     fun changeFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
-            .replace(binding.mainContent.id, fragment).commit()
+            .replace(binding.mainContent.id, fragment).addToBackStack(null).commit()
+        supportFragmentManager.beginTransaction().isAddToBackStackAllowed
+    }
+
+    override fun onBackPressed() {
+        println("뒤로 가기")
+        if(supportFragmentManager.backStackEntryCount == 1) {
+            if (System.currentTimeMillis() > backPressedTime + FINISH_INTERVAL_TIME) {
+                backPressedTime = System.currentTimeMillis()
+                Toast.makeText(this, "'뒤로' 버튼을 한 번 더 누르면 종료됩니다.", Toast.LENGTH_SHORT).show();
+
+                return
+            } else {
+                finishAffinity()
+            }
+        } else {
+            supportFragmentManager.popBackStackImmediate()
+            changeNavigation()
+        }
+    }
+
+    private fun changeNavigation() {
+        println(supportFragmentManager.fragments)
+        for (fragment: Fragment in supportFragmentManager.fragments) {
+            if (fragment.isVisible) {
+                when(fragment.javaClass) {
+                    AccountFragment().javaClass-> binding.myNavigation.menu.findItem(R.id.accountItem).isChecked = true
+                    FavoriteFragment().javaClass->binding.myNavigation.menu.findItem(R.id.favoriteItem).isChecked = true
+                    HomeFragment().javaClass->binding.myNavigation.menu.findItem(R.id.homeItem).isChecked = true
+                    SearchFragment().javaClass->binding.myNavigation.menu.findItem(R.id.searchItem).isChecked = true
+                }
+            }
+        }
+    }
+
+    private fun nullCheckUri(uri: Uri?) {
+        if (uri==null) {    //갤러리에서 사진 선택 없이 뒤로 가기 버튼 눌렀을 때
+            changeNavigation()
+        } else {
+            changeFragment(GalleryFragment(uri))
+        }
     }
 }
 
