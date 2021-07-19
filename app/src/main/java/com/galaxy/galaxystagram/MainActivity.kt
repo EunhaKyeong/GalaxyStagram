@@ -75,7 +75,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        println("뒤로 가기")
         if(supportFragmentManager.backStackEntryCount == 1) {
             if (System.currentTimeMillis() > backPressedTime + FINISH_INTERVAL_TIME) {
                 backPressedTime = System.currentTimeMillis()
@@ -91,17 +90,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun changeNavigation() {
-        println(supportFragmentManager.fragments)
-        for (fragment: Fragment in supportFragmentManager.fragments) {
-            if (fragment.isVisible) {
-                when(fragment.javaClass) {
-                    AccountFragment().javaClass-> binding.myNavigation.menu.findItem(R.id.accountItem).isChecked = true
-                    FavoriteFragment().javaClass->binding.myNavigation.menu.findItem(R.id.favoriteItem).isChecked = true
-                    HomeFragment().javaClass->binding.myNavigation.menu.findItem(R.id.homeItem).isChecked = true
-                    SearchFragment().javaClass->binding.myNavigation.menu.findItem(R.id.searchItem).isChecked = true
-                }
-            }
+    fun changeNavigation() {
+        var fragment: Fragment? = supportFragmentManager.findFragmentById(binding.mainContent.id)
+        println(fragment.toString())
+        when(fragment?.javaClass) {
+            AccountFragment().javaClass-> binding.myNavigation.menu.findItem(R.id.accountItem).isChecked = true
+            FavoriteFragment().javaClass->binding.myNavigation.menu.findItem(R.id.favoriteItem).isChecked = true
+            SearchFragment().javaClass->binding.myNavigation.menu.findItem(R.id.searchItem).isChecked = true
+            else->binding.myNavigation.menu.findItem(R.id.homeItem).isChecked = true
         }
     }
 
@@ -109,7 +105,7 @@ class MainActivity : AppCompatActivity() {
         if (uri==null) {    //갤러리에서 사진 선택 없이 뒤로 가기 버튼 눌렀을 때
             changeNavigation()
         } else {
-            changeFragment(GalleryFragment(uri))
+            changeFragment(GalleryFragment(uri!!))
         }
     }
 }

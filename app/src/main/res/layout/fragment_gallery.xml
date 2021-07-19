@@ -20,7 +20,7 @@
         android:layout_toRightOf="@+id/postPhotoIV"
         android:gravity="top"
         android:paddingLeft="10dp"
-        android:text="@string/hint_image_content" />
+        android:hint="@string/hint_image_content" />
 
     <Button
         android:id="@+id/postButton"
