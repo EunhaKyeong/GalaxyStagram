@@ -7,5 +7,5 @@
 
 <br><br>
 
-<p align="center"><img src="https://user-images.githubusercontent.com/66666533/126044610-24ec4919-ccfe-4f01-8c6f-b2251d7713c3.gif" width="300px"></p>
+<p align="center"><img src="https://user-images.githubusercontent.com/66666533/126518175-8e88915e-e3ab-40b2-b0a1-6d4d8619f84a.gif" width="300px"></p>
 
