@@ -50,7 +50,14 @@ class LoginActivity : AppCompatActivity() {
         var email: String = binding.emailEditText.text.toString()
         var password: String = binding.passwordEditText.text.toString()
 
-        auth!!.createUserWithEmailAndPassword(email, password)
+        if (email.isEmpty()||password.isEmpty()) {
+            Toast.makeText(this@LoginActivity, R.string.signin_fail_null, Toast.LENGTH_SHORT)
+                .show()
+
+            return
+        }
+
+        auth!!.createUserWithEmailAndPassword(email!!, password!!)
             .addOnCompleteListener(this@LoginActivity) { task ->
                 if (task.isSuccessful) {
                     //로그인 성공
