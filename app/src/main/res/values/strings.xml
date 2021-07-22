@@ -35,7 +35,7 @@
     <string name="count_0">0</string>
 
     <!-- Alarm -->
-    <string name="alarm_favorite">Liked the press</string>
+    <string name="alarm_favorite">좋아요 이벤트 성공!</string>
     <string name="alarm_comment">left a message</string>
     <string name="alarm_follow">has started to follow your account</string>
 
@@ -56,4 +56,5 @@
     <item name="masked" type="id" />
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="error_alarm">오류 발생! 다시 시도해 주세요.</string>
 </resources>

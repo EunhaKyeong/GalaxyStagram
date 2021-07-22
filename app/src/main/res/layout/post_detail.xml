@@ -2,20 +2,19 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginBottom="15dp">
+    android:layout_height="wrap_content">
 
     <LinearLayout
         android:id="@+id/accountLinearLayout"
         android:layout_width="match_parent"
-        android:layout_height="65dp"
+        android:layout_height="50dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_height="match_parent"
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
             android:gravity="center_vertical"
@@ -35,6 +34,7 @@
         android:id="@+id/postPhotoIV"
         android:layout_width="match_parent"
         android:layout_height="250dp"
+        android:layout_marginTop="10dp"
         android:scaleType="fitXY"
         app:layout_constraintTop_toBottomOf="@+id/accountLinearLayout" />
 
