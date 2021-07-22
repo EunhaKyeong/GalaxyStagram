@@ -22,6 +22,12 @@ import com.google.firebase.firestore.Query
 
 class HomeFragment: Fragment() {
     private lateinit var mBinding: FragmentHomeBinding
+    private var TAG: String = "HomeFragment: "
+    private var store: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private var auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private var adapter: PostAdapter? = null
+    private var contentsList = arrayListOf<ContentDTO>()
+    private var contentsId = arrayListOf<String>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -30,7 +36,8 @@ class HomeFragment: Fragment() {
     ): View? {
         mBinding = FragmentHomeBinding.inflate(inflater, container, false)
 
-        mBinding.postsRecyclerView.adapter = PostAdapter()
+        adapter = PostAdapter()
+        mBinding.postsRecyclerView.adapter = adapter
         //layoutManager : 아이템의 배치를 담당.
         //LinearLayoutManager : 가로/세로
         //GirdLayoutManager : 그리드 형식
@@ -42,13 +49,8 @@ class HomeFragment: Fragment() {
     }
 
     //Adapter : 데이터와 아이템에 관한 View를 생성.
-    inner class PostAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    inner class PostAdapter: RecyclerView.Adapter<PostHolder>() {
         private lateinit var postDetailBinding: PostDetailBinding
-        private var store: FirebaseFirestore = FirebaseFirestore.getInstance()
-        private var auth: FirebaseAuth = FirebaseAuth.getInstance()
-        private var contentsList = arrayListOf<ContentDTO>()
-        private var contentsId = arrayListOf<String>()
-        private var TAG: String = "HomeFragment: "
 
         //DB에서 게시글 데이터 가져오기
         init {
@@ -72,36 +74,51 @@ class HomeFragment: Fragment() {
         }
 
         //post_detail.xml을 아이템뷰 생성
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostHolder {
             var inflater: LayoutInflater = parent.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
             postDetailBinding = PostDetailBinding.inflate(inflater, parent, false)
 
-            return PostHolder(postDetailBinding.root)
+            return PostHolder(postDetailBinding)
         }
 
         //아이템뷰 화면에 입력돼야 할 데이터 추가.
-        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-            postDetailBinding.usernameTextView.text = contentsList.get(position)!!.userEmail
-            Glide.with(holder.itemView).load(contentsList.get(position).imageUrl).into(postDetailBinding.postPhotoIV)
-            postDetailBinding.favoriteCountTextView.text = "좋아요 ${contentsList.get(position)!!.favoriteCount}개"
-            postDetailBinding.postTextView.text = contentsList.get(position).exaplain
+        override fun onBindViewHolder(holder: PostHolder, position: Int) {
+            holder.setData(contentsList[position], position)
+        }
 
+        //총 몇 개의 아이템이 추가되어야 하는지 확인.
+        override fun getItemCount(): Int {
+            return contentsList.size
+        }
+    }
+
+    //뷰를 보관하는 Holder 객체.
+    //item 뷰들을 재활용하기 위해 각 요소를 저장해두고 사용.
+    //아이템 생성시 뷰 바인딩은 한 번만 하고, 바인딩 된 객체를 가져다 사용해 성능이 효율적.
+    inner class PostHolder(var postDetailBinding: PostDetailBinding) : RecyclerView.ViewHolder(postDetailBinding.root) {
+        private var position: Int? = null
+
+        init {
             postDetailBinding.heartIcon.setOnClickListener {
-                heartIconClickEvent(position)
+                heartIconClickEvent(position!!)
             }
+        }
 
-            if (contentsList[position].favorites.containsKey(auth.currentUser!!.uid)) {
+        fun setData(content: ContentDTO, position: Int) {
+            this.position = position
+
+            postDetailBinding.usernameTextView.text = content.userEmail
+            Glide.with(postDetailBinding.root).load(content.imageUrl).into(postDetailBinding.postPhotoIV)
+            postDetailBinding.favoriteCountTextView.text = "좋아요 ${content.favoriteCount}개"
+            postDetailBinding.postTextView.text = content.exaplain
+
+            if (content.favorites.containsKey(auth.currentUser!!.uid)) {
                 //해당 게시글에 좋아요를 누른 사람이면
                 postDetailBinding.heartIcon.setImageResource(R.drawable.heart_fill)
             } else {
                 //해당 게시글에 좋아요를 누르지 않은 사람이면
                 postDetailBinding.heartIcon.setImageResource(R.drawable.heart)
             }
-        }
-
-        //총 몇 개의 아이템이 추가되어야 하는지 확인.
-        override fun getItemCount(): Int {
-            return contentsList.size
         }
 
         private fun heartIconClickEvent(position: Int) {
@@ -118,21 +135,17 @@ class HomeFragment: Fragment() {
                     content.favorites.put(auth.currentUser!!.uid, true)
                 }
 
-                transaction.set(postDoc, content)
+                transaction.update(postDoc, "favorites", content.favorites)
+                transaction.update(postDoc, "favoriteCount", content.favoriteCount)
             }.addOnSuccessListener {
                 Log.d(TAG, getString(R.string.alarm_favorite))
-                notifyItemChanged(position)
+                adapter?.notifyItemChanged(position)
             }.addOnFailureListener {
                 Log.e(TAG, it.toString())
                 Toast.makeText(activity, getString(R.string.error_alarm), Toast.LENGTH_SHORT).show()
             }
         }
     }
-
-    //뷰를 보관하는 Holder 객체.
-    //item 뷰들을 재활용하기 위해 각 요소를 저장해두고 사용.
-    //아이템 생성시 뷰 바인딩은 한 번만 하고, 바인딩 된 객체를 가져다 사용해 성능이 효율적.
-    inner class PostHolder(root: View) : RecyclerView.ViewHolder(root)
 
     //아이템 간 수직(위아래) 간격 설정
     inner class VerticalItemDecorator(var divHeight: Int):RecyclerView.ItemDecoration() {
