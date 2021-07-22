@@ -3,6 +3,7 @@ package com.galaxy.galaxystagram
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import com.galaxy.galaxystagram.contract.SignInIntentContract
@@ -16,6 +17,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
     var auth: FirebaseAuth? = null
     var launcher: ActivityResultLauncher<String>? = null
+    private var TAG: String = "LognActivity: "
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,7 +82,7 @@ class LoginActivity : AppCompatActivity() {
                     //이미 존재하는 사용자 -> 로그인 함수 호출.
                     emailSignIn()
                 } else {
-                    println(task.exception.toString())
+                    Log.e(TAG, task.exception.toString())
                     Toast.makeText(
                         this@LoginActivity, task.exception.toString(),
                         Toast.LENGTH_SHORT
@@ -132,7 +134,7 @@ class LoginActivity : AppCompatActivity() {
                     ).show()
                     startActivity(Intent(this@LoginActivity, MainActivity::class.java))
                 } else {
-                    println("firebaseAuthWithGoogle => ${task.exception}")
+                    Log.e(TAG, task.exception.toString())
                     Toast.makeText(
                         this@LoginActivity, getString(R.string.signin_google_faile),
                         Toast.LENGTH_SHORT

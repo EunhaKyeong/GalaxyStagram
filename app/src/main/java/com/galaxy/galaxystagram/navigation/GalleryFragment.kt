@@ -2,6 +2,7 @@ package com.galaxy.galaxystagram.navigation
 
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,6 +26,7 @@ class GalleryFragment(uri: Uri): Fragment() {
     private var uri: Uri = uri
     private var auth: FirebaseAuth? = null
     private var store: FirebaseFirestore? = null
+    private var TAG: String = "GalleryFragment: "
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -73,7 +75,7 @@ class GalleryFragment(uri: Uri): Fragment() {
             (activity as MainActivity).changeFragment(HomeFragment())
             (activity as MainActivity).changeNavigation()
         }.addOnFailureListener {
-            println(it)
+            Log.e(TAG, it.toString())
             Toast.makeText(activity, getString(R.string.upload_fail), Toast.LENGTH_SHORT).show()
         }
     }
