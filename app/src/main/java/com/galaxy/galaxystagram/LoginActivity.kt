@@ -8,14 +8,18 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import com.galaxy.galaxystagram.contract.SignInIntentContract
 import com.galaxy.galaxystagram.databinding.ActivityLoginBinding
+import com.galaxy.galaxystagram.model.UserDTO
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.auth.User
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
-    var auth: FirebaseAuth? = null
+    private var auth: FirebaseAuth? = null
+    private var store: FirebaseFirestore? = null
     var launcher: ActivityResultLauncher<String>? = null
     private var TAG: String = "LognActivity: "
 
@@ -28,6 +32,7 @@ class LoginActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         auth = FirebaseAuth.getInstance()
+        store = FirebaseFirestore.getInstance()
 
         //LoginActivity -> 구글로그인 화면 -> LoginActivity로 돌아온 후 콜백 함수.
         //구글로그인 화면을 통해 얻어온 tokenId를 이용해 Firebase 사용자 인증 정보로 교환하고
@@ -61,12 +66,13 @@ class LoginActivity : AppCompatActivity() {
 
         auth!!.createUserWithEmailAndPassword(email!!, password!!)
             .addOnCompleteListener(this@LoginActivity) { task ->
-                if (task.isSuccessful) {
-                    //로그인 성공
-                    Toast.makeText(
-                        this@LoginActivity,
-                        getString(R.string.signin_complete), Toast.LENGTH_SHORT
-                    ).show()
+                if (task.isSuccessful) {    //로그인 성공
+                    //신규 사용자의 경우 users 데이터베이스에 데이터 저장.
+                    var userDTO: UserDTO = UserDTO()
+                    userDTO.email = auth!!.currentUser!!.email
+                    store!!.collection("users").document(auth!!.uid!!).set(userDTO)
+
+                    //DB 저장 후 메인 화면으로 이동.
                     startActivity(Intent(this@LoginActivity, MainActivity::class.java))
                 } else if (task.exception!!.toString()
                         .contains("FirebaseAuthWeakPasswordException")
@@ -100,11 +106,6 @@ class LoginActivity : AppCompatActivity() {
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     //로그인 성공
-                    Toast.makeText(
-                        this@LoginActivity,
-                        getString(R.string.signin_complete),
-                        Toast.LENGTH_SHORT
-                    ).show()
                     startActivity(Intent(this@LoginActivity, MainActivity::class.java))
                 } else {
                     //로그인 실패
@@ -126,13 +127,24 @@ class LoginActivity : AppCompatActivity() {
         auth!!.signInWithCredential(credential)
             .addOnCompleteListener(this@LoginActivity) { task: Task<AuthResult> ->
                 if (task.isSuccessful) {
-                    // Sign in success, update UI with the signed-in user's information
-                    Toast.makeText(
-                        this@LoginActivity,
-                        getString(R.string.signin_complete),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+                    //신규 사용자면 user DB에 데이터 저장하기
+                    var userDoc = store!!.collection("users").document(auth!!.uid!!)
+                    store!!.runTransaction { transaction ->
+                        if(!transaction.get(userDoc).exists()) {
+                            var userDTO: UserDTO = UserDTO()
+                            userDTO.email = auth!!.currentUser!!.email
+                            transaction.set(userDoc, userDTO)
+                        }
+                    }.addOnSuccessListener {
+                        // Sign in success, update UI with the signed-in user's information
+                        startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+                    }.addOnFailureListener {
+                        Log.e(TAG, task.exception.toString())
+                        Toast.makeText(
+                            this@LoginActivity, getString(R.string.signin_google_faile),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 } else {
                     Log.e(TAG, task.exception.toString())
                     Toast.makeText(
