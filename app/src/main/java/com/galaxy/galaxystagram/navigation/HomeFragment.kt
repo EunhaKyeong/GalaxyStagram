@@ -7,11 +7,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.galaxy.galaxystagram.MainActivity
 import com.galaxy.galaxystagram.R
 import com.galaxy.galaxystagram.databinding.FragmentHomeBinding
 import com.galaxy.galaxystagram.databinding.PostDetailBinding
@@ -101,6 +103,10 @@ class HomeFragment: Fragment() {
         init {
             postDetailBinding.heartIcon.setOnClickListener {
                 heartIconClickEvent(position!!)
+            }
+            //게시글의 이메일 텍스트뷰를 누르면 계정 정보 화면으로 이동.
+            postDetailBinding.usernameTextView.setOnClickListener {
+                (activity as MainActivity).changeFragment(AccountFragment((it as TextView).text.toString()))
             }
         }
 
