@@ -4,18 +4,22 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.galaxy.galaxystagram.databinding.ActivityMainBinding
 import com.galaxy.galaxystagram.navigation.*
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private final var FINISH_INTERVAL_TIME: Long = 2000
     private var backPressedTime: Long = 0
+    private var auth: FirebaseAuth? = null
 
     //갤러리 앱으로 이동하는 launcher 등록
     private var launcher = registerForActivityResult(ActivityResultContracts.GetContent()) {
@@ -26,6 +30,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        auth = FirebaseAuth.getInstance()
 
         initNavigationBar() //네이게이션 바의 각 메뉴 탭을 눌렀을 때 화면이 전환되도록 하는 함수.
 
@@ -58,7 +64,7 @@ class MainActivity : AppCompatActivity() {
                         changeFragment(FavoriteFragment())
                     }
                     R.id.accountItem -> {
-                        changeFragment(AccountFragment())
+                        changeFragment(AccountFragment(auth!!.currentUser!!.uid))
                     }
                 }
 
@@ -94,7 +100,7 @@ class MainActivity : AppCompatActivity() {
         var fragment: Fragment? = supportFragmentManager.findFragmentById(binding.mainContent.id)
         println(fragment.toString())
         when(fragment?.javaClass) {
-            AccountFragment().javaClass-> binding.myNavigation.menu.findItem(R.id.accountItem).isChecked = true
+            AccountFragment(auth!!.currentUser!!.email.toString()).javaClass-> binding.myNavigation.menu.findItem(R.id.accountItem).isChecked = true
             FavoriteFragment().javaClass->binding.myNavigation.menu.findItem(R.id.favoriteItem).isChecked = true
             SearchFragment().javaClass->binding.myNavigation.menu.findItem(R.id.searchItem).isChecked = true
             else->binding.myNavigation.menu.findItem(R.id.homeItem).isChecked = true
@@ -106,6 +112,14 @@ class MainActivity : AppCompatActivity() {
             changeNavigation()
         } else {
             changeFragment(GalleryFragment(uri!!))
+        }
+    }
+
+    fun setVisibilityToolbar() {
+        if (binding.myToolbar.isVisible) {
+            binding.myToolbar.visibility = View.GONE
+        } else {
+            binding.myToolbar.visibility = View.VISIBLE
         }
     }
 }
