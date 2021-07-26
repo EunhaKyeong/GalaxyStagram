@@ -18,9 +18,14 @@ import com.galaxy.galaxystagram.R
 import com.galaxy.galaxystagram.databinding.FragmentHomeBinding
 import com.galaxy.galaxystagram.databinding.PostDetailBinding
 import com.galaxy.galaxystagram.model.ContentDTO
+import com.galaxy.galaxystagram.model.UserDTO
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class HomeFragment: Fragment() {
     private lateinit var mBinding: FragmentHomeBinding
@@ -29,6 +34,7 @@ class HomeFragment: Fragment() {
     private var auth: FirebaseAuth = FirebaseAuth.getInstance()
     private var adapter: PostAdapter? = null
     private var contentsList = arrayListOf<ContentDTO>()
+    private var usersHashMap = HashMap<String, UserDTO>()
     private var contentsId = arrayListOf<String>()
 
     override fun onCreateView(
@@ -38,8 +44,23 @@ class HomeFragment: Fragment() {
     ): View? {
         mBinding = FragmentHomeBinding.inflate(inflater, container, false)
 
-        adapter = PostAdapter()
-        mBinding.postsRecyclerView.adapter = adapter
+        GlobalScope.launch(Dispatchers.Main) {
+            withContext(Dispatchers.Default) {
+                store.collection("users").addSnapshotListener { users, error ->
+                    if (error != null)
+                        Log.e(TAG, error.toString())
+                    else {
+                        usersHashMap.clear()
+                        for (user in users!!.documents)
+                            usersHashMap[user.id] = user.toObject(UserDTO::class.java)!!
+                    }
+                }
+            }
+
+            adapter = PostAdapter()
+            mBinding.postsRecyclerView.adapter = adapter
+        }
+
         //layoutManager : 아이템의 배치를 담당.
         //LinearLayoutManager : 가로/세로
         //GirdLayoutManager : 그리드 형식
@@ -58,8 +79,8 @@ class HomeFragment: Fragment() {
         init {
             store.collection("posts")
                 .orderBy("timestamp", Query.Direction.DESCENDING)
-                .addSnapshotListener { posts, e->
-                    if (e!=null) {
+                .addSnapshotListener { posts, e ->
+                    if (e != null) {
                         Log.e(TAG, e.toString())
                         Toast.makeText(activity, R.string.upload_fail, Toast.LENGTH_SHORT).show()
                     } else {
@@ -117,6 +138,10 @@ class HomeFragment: Fragment() {
             Glide.with(postDetailBinding.root).load(content.imageUrl).into(postDetailBinding.postPhotoIV)
             postDetailBinding.favoriteCountTextView.text = "좋아요 ${content.favoriteCount}개"
             postDetailBinding.postTextView.text = content.exaplain
+            Glide.with(postDetailBinding.root)
+                .load(usersHashMap.get(content.uid)!!.profileImgUrl)
+                .circleCrop()
+                .into(postDetailBinding.profileImageView)
 
             if (content.favorites.containsKey(auth.currentUser!!.uid)) {
                 //해당 게시글에 좋아요를 누른 사람이면
