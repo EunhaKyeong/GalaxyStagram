@@ -159,13 +159,27 @@
             android:textColor="@color/black" />
     </LinearLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/postGridRecyclerView"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="10dp"
-        android:background="@color/black"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonsLinearLayout" />
+        app:layout_constraintTop_toBottomOf="@+id/buttonsLinearLayout">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/postGridRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/noPostImageView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter"
+            android:src="@drawable/no_content"
+            android:visibility="gone" />
+    </FrameLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
