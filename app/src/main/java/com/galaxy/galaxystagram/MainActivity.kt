@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity() {
                         changeFragment(FavoriteFragment())
                     }
                     R.id.accountItem -> {
-                        changeFragment(AccountFragment(auth!!.currentUser!!.uid))
+                        changeFragment(AccountFragment(auth!!.currentUser!!.email!!))
                     }
                 }
 
