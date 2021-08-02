@@ -21,10 +21,10 @@ import com.galaxy.galaxystagram.model.ContentDTO
 import com.galaxy.galaxystagram.model.UserDTO
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 class HomeFragment: Fragment() {
@@ -43,21 +43,30 @@ class HomeFragment: Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         mBinding = FragmentHomeBinding.inflate(inflater, container, false)
+        var followingSet: ArrayList<String>? = null
 
         GlobalScope.launch(Dispatchers.Main) {
             withContext(Dispatchers.Default) {
-                store.collection("users").addSnapshotListener { users, error ->
-                    if (error != null)
-                        Log.e(TAG, error.toString())
-                    else {
-                        usersHashMap.clear()
-                        for (user in users!!.documents)
-                            usersHashMap[user.id] = user.toObject(UserDTO::class.java)!!
+                var userDTO = store.collection("users").document(auth.uid!!).get()
+                    .await().toObject(UserDTO::class.java)
+
+                followingSet = ArrayList(userDTO!!.followings.keys)
+                followingSet?.add(auth.currentUser!!.email!!)
+
+                store.collection("users")
+                    .whereIn("email", followingSet!!)
+                    .addSnapshotListener { users, error ->
+                        if (error != null)
+                            Log.e(TAG, error.toString())
+                        else {
+                            usersHashMap.clear()
+                            for (user in users!!.documents)
+                                usersHashMap[user.id] = user.toObject(UserDTO::class.java)!!
+                        }
                     }
-                }
             }
 
-            adapter = PostAdapter()
+            adapter = PostAdapter(followingSet)
             mBinding.postsRecyclerView.adapter = adapter
         }
 
@@ -72,13 +81,13 @@ class HomeFragment: Fragment() {
     }
 
     //Adapter : 데이터와 아이템에 관한 View를 생성.
-    inner class PostAdapter: RecyclerView.Adapter<PostHolder>() {
+    inner class PostAdapter(followingList: ArrayList<String>?): RecyclerView.Adapter<PostHolder>() {
         private lateinit var postDetailBinding: PostDetailBinding
 
         //DB에서 게시글 데이터 가져오기
         init {
             store.collection("posts")
-                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .whereIn("userEmail", followingList!!)
                 .addSnapshotListener { posts, e ->
                     if (e != null) {
                         Log.e(TAG, e.toString())
@@ -138,10 +147,15 @@ class HomeFragment: Fragment() {
             Glide.with(postDetailBinding.root).load(content.imageUrl).into(postDetailBinding.postPhotoIV)
             postDetailBinding.favoriteCountTextView.text = "좋아요 ${content.favoriteCount}개"
             postDetailBinding.postTextView.text = content.exaplain
-            Glide.with(postDetailBinding.root)
-                .load(usersHashMap.get(content.uid)!!.profileImgUrl)
-                .circleCrop()
-                .into(postDetailBinding.profileImageView)
+            
+            try {   //프로필 이미지 띄워주기
+                Glide.with(postDetailBinding.root)
+                    .load(usersHashMap[content.uid]!!.profileImgUrl!!)
+                    .circleCrop()
+                    .into(postDetailBinding.profileImageView)
+            } catch(e: NullPointerException) {  //프로필 이미지가 없는 경우 -> 기본 이미지
+                postDetailBinding.profileImageView.setImageResource(R.drawable.user)
+            }
 
             if (content.favorites.containsKey(auth.currentUser!!.uid)) {
                 //해당 게시글에 좋아요를 누른 사람이면
@@ -169,7 +183,6 @@ class HomeFragment: Fragment() {
                 transaction.update(postDoc, "favorites", content.favorites)
                 transaction.update(postDoc, "favoriteCount", content.favoriteCount)
             }.addOnSuccessListener {
-                Log.d(TAG, getString(R.string.alarm_favorite))
                 adapter?.notifyItemChanged(position)
             }.addOnFailureListener {
                 Log.e(TAG, it.toString())

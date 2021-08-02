@@ -29,8 +29,8 @@
     <string name="post">게시물</string>
     <string name="following">팔로잉</string>
     <string name="follower">팔로워</string>
-    <string name="follow">Follow</string>
-    <string name="follow_cancel">Follow cancel</string>
+    <string name="follow">팔로우</string>
+    <string name="follow_cancel">팔로우 취소</string>
     <string name="editProfile">프로필 편집</string>
     <string name="count_0">0</string>
     <string name="message">메시지</string>

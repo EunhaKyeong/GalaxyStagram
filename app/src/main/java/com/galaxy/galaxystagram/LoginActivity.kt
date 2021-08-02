@@ -14,14 +14,13 @@ import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.auth.User
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
     private var auth: FirebaseAuth? = null
     private var store: FirebaseFirestore? = null
     var launcher: ActivityResultLauncher<String>? = null
-    private var TAG: String = "LognActivity: "
+    private var TAG: String = "LoginActivity: "
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,6 +68,7 @@ class LoginActivity : AppCompatActivity() {
                 if (task.isSuccessful) {    //로그인 성공
                     //신규 사용자의 경우 users 데이터베이스에 데이터 저장.
                     var userDTO: UserDTO = UserDTO()
+                    userDTO.uid = auth!!.uid
                     userDTO.email = auth!!.currentUser!!.email
                     store!!.collection("users").document(auth!!.uid!!).set(userDTO)
 
@@ -132,6 +132,7 @@ class LoginActivity : AppCompatActivity() {
                     store!!.runTransaction { transaction ->
                         if(!transaction.get(userDoc).exists()) {
                             var userDTO: UserDTO = UserDTO()
+                            userDTO.uid = auth!!.uid
                             userDTO.email = auth!!.currentUser!!.email
                             transaction.set(userDoc, userDTO)
                         }
