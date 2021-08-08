@@ -204,5 +204,3 @@ class AccountFragment(email: String): Fragment() {
         super.onPause()
     }
 }
-
-
